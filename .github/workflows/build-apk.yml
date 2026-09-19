@@ -2,42 +2,33 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ANDROID_HOME: /usr/local/lib/android/sdk
-      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-      SDKMANAGER: /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
-      - name: Accept Android SDK licenses
-        run: yes | "$SDKMANAGER" --licenses >/dev/null || true
-
-      - name: Install Android SDK 35
-        run: "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      - name: Build debug APK
+      - name: Build APK
         run: gradle assembleDebug --stacktrace
 
-      - name: Rename APK
+      - name: Prepare APK
         run: cp app/build/outputs/apk/debug/app-debug.apk ProjectEngineerTools.apk
 
       - name: Upload APK
@@ -45,4 +36,3 @@ jobs:
         with:
           name: ProjectEngineerTools-APK
           path: ProjectEngineerTools.apk
-          if-no-files-found: error
